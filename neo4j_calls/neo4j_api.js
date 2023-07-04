@@ -6,11 +6,16 @@ let driver = neo4j.driver("bolt://0.0.0.0:7687", neo4j.auth.basic(creds.neo4juse
 //Get all number of nodes//
 exports.get_num_nodes = async function () {
     let session = driver.session();
-    const num_nodes = await session.run('MATCH (n) RETURN n', {
+    const result = await session.run('MATCH (n) RETURN n', {
     });
     session.close();
-    console.log("RESULT", (!num_nodes ? 0 : num_nodes.records.length));
-    return (!num_nodes ? 0 : num_nodes.records.length);
+    const nodes = result.records.map((record) => record.get(0));
+   console.log("Nodes:", nodes);
+    return nodes;
+    //console.log("RESULT", (!num_nodes ? 0 : num_nodes.records.length));num_nodes
+    //console.log(num_nodes)
+    //return(num_nodes)
+    //return (!num_nodes ? 0 : num_nodes.records.length);
 };
 
 //Create a user//

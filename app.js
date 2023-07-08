@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const dotenv = require("dotenv").config();
+const connectDB = require("./config/connectDb.js");
+const authRoute = require("./routes/authRoute.js");
+const userRoute = require("./routes/userRoute.js");
 let cors = require('cors');
 let bodyParser = require('body-parser');    //Extract data from Express
 
@@ -21,9 +25,11 @@ app.use(function (req, res, next) {
     );
     next();
 });
-
+connectDB();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/test_api", authRoute);
+
 
 // 
 app.use('/test_api', test_api);

@@ -28,6 +28,22 @@ router.post('/create_node', async function (req, res, next) {
   } catch (error) { console.error(error); res.status(500).send('An error occurred'); }
 });
 
+// POST endpoint to add a relationship between nodes
+router.post('/neo4j_add_relationship', async (req, res) => {
+  try {
+    const { startNodeId, endNodeId, relationshipType } = req.body; // Extract input from the request body
+
+    // Call your Neo4j function to add the relationship between nodes
+    const result = await neo4j_calls.addRelationship(startNodeId, endNodeId, relationshipType);
+
+    // Send a success response
+    res.status(200).json({ message: 'Relationship added successfully', result });
+  } catch (error) {
+    console.error('Error adding relationship:', error);
+    res.status(500).json({ error: 'An error occurred while adding the relationship' });
+  }
+});
+
 //Api end point to create a user 
 router.post('/neo4j_post', async function (req, res, next) {
   //Passing in "name" parameter in body of POST request
@@ -37,6 +53,7 @@ router.post('/neo4j_post', async function (req, res, next) {
   return 700000;
   //res.status(200).send("test delete")
 })
+
 
 //Api end point to delete a node
 router.delete('/neo4j_delete/:nodeId', async function (req, res, next) {

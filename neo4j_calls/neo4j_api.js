@@ -2,7 +2,7 @@ let neo4j = require('neo4j-driver');
 let { creds } = require("./../config/credentials");
 let driver = neo4j.driver("bolt://0.0.0.0:7687", neo4j.auth.basic(creds.neo4jusername, creds.neo4jpw));
 //Get all number of nodes//
-exports.get_num_nodes = async function () {
+/*exports.get_num_nodes = async function () {
   let session = driver.session();
   const result = await session.run('MATCH (n) RETURN n', {
   });
@@ -10,7 +10,25 @@ exports.get_num_nodes = async function () {
   const nodes = result.records.map((record) => record.get(0));
   console.log("Nodes:", nodes);
   return nodes;
+};*/
+exports.get_num_nodes = async function () {
+  let session = driver.session();
+  const result = await session.run(
+    'MATCH (n) OPTIONAL MATCH (n)-[r]->(m) RETURN n, r, m'
+  );
+  session.close();
+  
+  const nodes = result.records.map((record) => {
+    const node = record.get('n');
+    const relationship = record.get('r');
+    const connectedNode = record.get('m');
+    return { node, relationship, connectedNode };
+  });
+
+  console.log("Nodes and Relationships:", nodes);
+  return nodes;
 };
+
 exports.addNewNode = async function (label, properties) {
   let session = driver.session();
   console.log ("Labels from api",label)
@@ -131,6 +149,22 @@ exports.getNodesByLabel = async function (label) {
   return nodes;
 
 };
+
+// Function to create a relationship between nodes
+exports.addRelationship = async function addRelationship(startNodeId, endNodeId, relationshipType) {
+  const session = driver.session();
+  try {
+    const result = await session.writeTransaction(tx =>
+      tx.run(
+        'MATCH (a), (b) WHERE ID(a) = $startNodeId AND ID(b) = $endNodeId CREATE (a)-[:' + relationshipType + ']->(b) RETURN a, b',
+        { startNodeId, endNodeId }
+      )
+    );
+    return result.records.map(record => record.toObject());
+  } finally {
+    session.close();
+  }
+}
 
 
 

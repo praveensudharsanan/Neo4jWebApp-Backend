@@ -2,26 +2,40 @@ const express = require('express');
 const router = express.Router();
 const neo4j_calls = require('./../neo4j_calls/neo4j_api');
 router.get('/', async function (req, res, next) {
-    res.status(200).send("Root Response from :8080/test_api")
-    return 700000;
+  res.status(200).send("Root Response from :8080/test_api")
+  return 700000;
 })
 
 
 //Api end point Get all nodes//
 router.get('/neo4j_get', async function (req, res, next) {
-    let result = await neo4j_calls.get_num_nodes();
-    console.log("RESULT IS", result)
-    res.status(200).send({ result })    //Can't send just a Number; encapsulate with {} or convert to String.     
-    return { result };
+  let result = await neo4j_calls.get_num_nodes();
+  console.log("RESULT IS", result)
+  res.status(200).send({ result })    //Can't send just a Number; encapsulate with {} or convert to String.     
+  return { result };
 })
+
+
+// API endpoint to create a new node 
+router.post('/create_node', async function (req, res, next) {
+  try {
+    const { label, properties } = req.body; // Extract label and properties from the request body 
+    console.log (label)
+    console.log (properties)  
+    console.log (req.body)
+    if (!label || !properties) { return res.status(400).send('Label and properties are required.'); }     // Use the addNewNode function to add a new node with the specified label and properties     
+    const newNode = await neo4j_calls.addNewNode(label, properties); res.status(201).json(newNode); // Return the newly created node as JSON response   
+  } catch (error) { console.error(error); res.status(500).send('An error occurred'); }
+});
+
 //Api end point to create a user 
 router.post('/neo4j_post', async function (req, res, next) {
-    //Passing in "name" parameter in body of POST request
-    let { name } = req.body;
-    let string = await neo4j_calls.create_user(name);
-    res.status(200).send("User named " + string + " created")
-    return 700000;
-    //res.status(200).send("test delete")
+  //Passing in "name" parameter in body of POST request
+  let { name } = req.body;
+  let string = await neo4j_calls.create_user(name);
+  res.status(200).send("User named " + string + " created")
+  return 700000;
+  //res.status(200).send("test delete")
 })
 
 //Api end point to delete a node
@@ -33,7 +47,7 @@ router.delete('/neo4j_delete/:nodeId', async function (req, res, next) {
     console.log(`Deleted ${nodesDeleted} node(s).`);
   } catch (error) {
     console.error('Error deleting node:', error);
-    res.status(500).send({ error: 'Failed to delete node.' });
+    res.status(500).send({ error: 'Failed to delete node as relationship exists.' });
     return;
   }
   res.status(200).send({ nodesDeleted });

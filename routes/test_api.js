@@ -15,6 +15,22 @@ router.get('/neo4j_get', async function (req, res, next) {
   return { result };
 })
 
+router.put('/update_node/:nodeId', async function (req, res, next) {
+  try {
+    const nodeId = req.params.nodeId;
+    const updatedProperties = req.body.properties; // Assuming the properties are sent in the request body
+
+    await neo4j_calls.updateNodeProperties(nodeId, updatedProperties);
+    
+    res.status(200).json({ message: 'Node properties updated successfully' });
+  } catch (error) {
+    console.error('Error updating node properties:', error);
+    res.status(500).json({ error: 'An error occurred while updating node properties' });
+  }
+});
+
+module.exports = router;
+
 
 // API endpoint to create a new node 
 router.post('/create_node', async function (req, res, next) {

@@ -1,6 +1,6 @@
 let neo4j = require('neo4j-driver');
 let { creds } = require("./../config/credentials");
-let driver = neo4j.driver("bolt://0.0.0.0:7687", neo4j.auth.basic(creds.neo4jusername, creds.neo4jpw));
+let driver = neo4j.driver("neo4j://localhost:11003", neo4j.auth.basic(creds.neo4jusername, creds.neo4jpw));
 //Get all number of nodes//
 /*exports.get_num_nodes = async function () {
   let session = driver.session();
@@ -39,6 +39,20 @@ exports.addNewNode = async function (label, properties) {
   const newNode = result.records[0].get('n').properties; return newNode;
 };
 
+
+// Define a method to update node properties
+exports.updateNodeProperties =async function updateNodeProperties(nodeId, updatedProperties) {
+  const session = driver.session();
+  try {
+    const result = await session.run(
+      `MATCH (n) WHERE ID(n) = toInteger($nodeId) SET n += $updatedProperties RETURN n`,
+      { nodeId, updatedProperties }
+    );
+    return result.records[0].get('n').properties;
+  } finally {
+    session.close();
+  }
+}
 
 //Create a user//
 exports.create_user = async function (name) {
